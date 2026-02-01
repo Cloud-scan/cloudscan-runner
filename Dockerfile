@@ -2,20 +2,23 @@
 # Expects pre-built binary from make linux
 FROM ubuntu:22.04
 
-# Install runtime dependencies
+# Install runtime dependencies (minimal set needed for all scanners)
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     curl \
     wget \
     git \
+    unzip \
     python3 \
     python3-pip \
-    unzip \
+    pkg-config \
+    libicu-dev \
+    libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 
 ARG TARGETARCH
 
-# Install Trivy (SCA scanner)
+# Install Trivy (SCA scanner) - Standalone Binary
 RUN TRIVY_VERSION=0.58.1 && \
     if [ "$TARGETARCH" = "arm64" ]; then TRIVY_ARCH="ARM64"; else TRIVY_ARCH="64bit"; fi && \
     wget -qO /tmp/trivy.tar.gz https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-${TRIVY_ARCH}.tar.gz && \
@@ -23,10 +26,7 @@ RUN TRIVY_VERSION=0.58.1 && \
     chmod +x /usr/local/bin/trivy && \
     rm /tmp/trivy.tar.gz
 
-# Install Semgrep (SAST scanner)
-RUN pip3 install --no-cache-dir semgrep
-
-# Install TruffleHog (Secrets scanner)
+# Install TruffleHog (Secrets scanner) - Standalone Binary
 RUN TRUFFLEHOG_VERSION=3.63.7 && \
     if [ "$TARGETARCH" = "arm64" ]; then TRUFFLEHOG_ARCH="arm64"; else TRUFFLEHOG_ARCH="amd64"; fi && \
     wget -qO /tmp/trufflehog.tar.gz https://github.com/trufflesecurity/trufflehog/releases/download/v${TRUFFLEHOG_VERSION}/trufflehog_${TRUFFLEHOG_VERSION}_linux_${TRUFFLEHOG_ARCH}.tar.gz && \
@@ -34,10 +34,10 @@ RUN TRUFFLEHOG_VERSION=3.63.7 && \
     chmod +x /usr/local/bin/trufflehog && \
     rm /tmp/trufflehog.tar.gz
 
-# Install ScanCode (License scanner)
-RUN pip3 install --no-cache-dir scancode-toolkit
+# Install Python-based scanners using pip (official method, most reliable)
+RUN pip3 install --no-cache-dir semgrep==1.99.0 scancode-toolkit-mini==32.3.0
 
-# Verify scanner installations
+# Verify all scanner installations
 RUN trivy --version && \
     semgrep --version && \
     trufflehog --version && \
