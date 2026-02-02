@@ -1,5 +1,5 @@
-github.com/cloud-scan/cloudscan-orchestrator v0.0.0-20260131213405-8794ab2d25de h1:ubP/QWIBUhyxeEQAdv9C/kvdqVNPFVYLBPIfR8TdZlE=
-github.com/cloud-scan/cloudscan-orchestrator v0.0.0-20260131213405-8794ab2d25de/go.mod h1:DjllizDr9T9eCpRemDXdytQUSGMhXyubmoiUnnNWuZE=
+github.com/cloud-scan/cloudscan-orchestrator v0.0.0-20260202165107-688adaaf5528 h1:fPkyASwnbCluHJ7D6GtRxHPL/wp0RPxzBuUZZZ5IcVw=
+github.com/cloud-scan/cloudscan-orchestrator v0.0.0-20260202165107-688adaaf5528/go.mod h1:DjllizDr9T9eCpRemDXdytQUSGMhXyubmoiUnnNWuZE=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=

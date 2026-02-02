@@ -3,7 +3,7 @@ module github.com/cloud-scan/cloudscan-runner
 go 1.24.0
 
 require (
-	github.com/cloud-scan/cloudscan-orchestrator v0.0.0-20260131213405-8794ab2d25de
+	github.com/cloud-scan/cloudscan-orchestrator v0.0.0-20260202165107-688adaaf5528
 	github.com/google/uuid v1.6.0
 	github.com/sirupsen/logrus v1.9.3
 	google.golang.org/grpc v1.78.0

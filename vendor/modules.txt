@@ -1,4 +1,4 @@
-# github.com/cloud-scan/cloudscan-orchestrator v0.0.0-20260131213405-8794ab2d25de
+# github.com/cloud-scan/cloudscan-orchestrator v0.0.0-20260202165107-688adaaf5528
 ## explicit; go 1.24.0
 github.com/cloud-scan/cloudscan-orchestrator/generated/proto
 # github.com/google/uuid v1.6.0
