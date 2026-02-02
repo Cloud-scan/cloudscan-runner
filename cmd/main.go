@@ -66,12 +66,33 @@ func runScan(cfg *config.Config) error {
 		log.WithError(err).Warn("Failed to update scan status to RUNNING")
 	}
 
-	// Download source code
-	log.Info("Downloading source code")
+	// Prepare source code (either download artifact or clone from Git)
 	dl := downloader.New(cfg.DownloadTimeout)
-	if err := dl.DownloadAndExtract(ctx, cfg.SourceDownloadURL, cfg.WorkDir); err != nil {
-		orchClient.UpdateScanStatus(ctx, cfg.ScanID, pb.ScanStatus_FAILED, fmt.Sprintf("Failed to download source: %v", err))
-		return fmt.Errorf("failed to download source: %w", err)
+
+	if cfg.SourceDownloadURL != "" {
+		// Artifact flow: Download from presigned URL
+		log.Info("Downloading source code from artifact")
+		if err := dl.DownloadAndExtract(ctx, cfg.SourceDownloadURL, cfg.WorkDir); err != nil {
+			orchClient.UpdateScanStatus(ctx, cfg.ScanID, pb.ScanStatus_FAILED, fmt.Sprintf("Failed to download source: %v", err))
+			return fmt.Errorf("failed to download source: %w", err)
+		}
+	} else if cfg.GitURL != "" {
+		// Git flow: Clone repository
+		log.WithFields(log.Fields{
+			"repo_url": cfg.GitURL,
+			"branch":   cfg.GitBranch,
+			"commit":   cfg.GitCommit,
+		}).Info("Cloning source code from Git repository")
+
+		if err := dl.CloneGit(ctx, cfg.GitURL, cfg.GitBranch, cfg.GitCommit, cfg.WorkDir); err != nil {
+			orchClient.UpdateScanStatus(ctx, cfg.ScanID, pb.ScanStatus_FAILED, fmt.Sprintf("Failed to clone repository: %v", err))
+			return fmt.Errorf("failed to clone repository: %w", err)
+		}
+	} else {
+		// This should never happen due to config validation, but handle it anyway
+		errMsg := "No source specified: neither SOURCE_DOWNLOAD_URL nor REPOSITORY_URL provided"
+		orchClient.UpdateScanStatus(ctx, cfg.ScanID, pb.ScanStatus_FAILED, errMsg)
+		return fmt.Errorf(errMsg)
 	}
 
 	// Initialize scanners based on requested scan types

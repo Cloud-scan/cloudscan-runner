@@ -57,10 +57,8 @@ func LoadFromEnv() (*Config, error) {
 	}
 	cfg.ScanID = scanID
 
+	// Source artifact ID is optional (only for artifact-based scans)
 	cfg.SourceArtifactID = os.Getenv("SOURCE_ARTIFACT_ID")
-	if cfg.SourceArtifactID == "" {
-		return nil, fmt.Errorf("SOURCE_ARTIFACT_ID environment variable is required")
-	}
 
 	orgIDStr := os.Getenv("ORGANIZATION_ID")
 	if orgIDStr == "" {
@@ -87,11 +85,6 @@ func LoadFromEnv() (*Config, error) {
 		return nil, fmt.Errorf("ORCHESTRATOR_ENDPOINT environment variable is required")
 	}
 
-	cfg.SourceDownloadURL = os.Getenv("SOURCE_DOWNLOAD_URL")
-	if cfg.SourceDownloadURL == "" {
-		return nil, fmt.Errorf("SOURCE_DOWNLOAD_URL environment variable is required")
-	}
-
 	scanTypesStr := os.Getenv("SCAN_TYPES")
 	if scanTypesStr == "" {
 		return nil, fmt.Errorf("SCAN_TYPES environment variable is required")
@@ -99,10 +92,19 @@ func LoadFromEnv() (*Config, error) {
 	cfg.ScanTypes = strings.Split(scanTypesStr, ",")
 
 	// Optional fields with defaults
-	cfg.GitURL = getEnv("GIT_URL", "")
-	cfg.GitBranch = getEnv("GIT_BRANCH", "")
-	cfg.GitCommit = getEnv("GIT_COMMIT", "")
-	cfg.StorageEndpoint = getEnv("STORAGE_ENDPOINT", "")
+	cfg.GitURL = getEnv("REPOSITORY_URL", "")  // Changed from GIT_URL to match dispatcher
+	cfg.GitBranch = getEnv("BRANCH", "")       // Changed from GIT_BRANCH to match dispatcher
+	cfg.GitCommit = getEnv("COMMIT_SHA", "")   // Changed from GIT_COMMIT to match dispatcher
+	cfg.StorageEndpoint = getEnv("STORAGE_SERVICE_ENDPOINT", "")  // Match dispatcher
+	cfg.SourceDownloadURL = getEnv("SOURCE_DOWNLOAD_URL", "")  // Optional - only for artifact scans
+
+	// Validate: Must have either Git repository OR artifact download URL
+	hasGitSource := cfg.GitURL != ""
+	hasArtifactSource := cfg.SourceDownloadURL != ""
+
+	if !hasGitSource && !hasArtifactSource {
+		return nil, fmt.Errorf("either REPOSITORY_URL or SOURCE_DOWNLOAD_URL must be provided")
+	}
 
 	cfg.WorkDir = getEnv("WORK_DIR", "/workspace")
 	cfg.ResultsDir = getEnv("RESULTS_DIR", "/results")

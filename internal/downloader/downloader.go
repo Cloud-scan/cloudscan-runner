@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -149,4 +150,55 @@ func (d *Downloader) extractFile(f *zip.File, destDir string) error {
 	// Copy data
 	_, err = io.Copy(destFile, srcFile)
 	return err
+}
+
+// CloneGit clones a Git repository to the destination directory
+func (d *Downloader) CloneGit(ctx context.Context, repoURL, branch, commit, destDir string) error {
+	d.logger.WithFields(log.Fields{
+		"repo_url": repoURL,
+		"branch":   branch,
+		"commit":   commit,
+		"dest_dir": destDir,
+	}).Info("Cloning Git repository")
+
+	// Create destination directory
+	if err := os.MkdirAll(destDir, 0755); err != nil {
+		return fmt.Errorf("failed to create destination directory: %w", err)
+	}
+
+	// Build git clone command
+	args := []string{"clone", "--depth=1"}
+
+	if branch != "" {
+		args = append(args, "--branch", branch)
+	}
+
+	args = append(args, repoURL, destDir)
+
+	// Execute git clone
+	cmd := exec.CommandContext(ctx, "git", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	d.logger.WithField("command", cmd.String()).Debug("Executing git clone")
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to clone repository: %w", err)
+	}
+
+	// If specific commit is requested, checkout that commit
+	if commit != "" {
+		d.logger.WithField("commit", commit).Info("Checking out specific commit")
+
+		checkoutCmd := exec.CommandContext(ctx, "git", "-C", destDir, "checkout", commit)
+		checkoutCmd.Stdout = os.Stdout
+		checkoutCmd.Stderr = os.Stderr
+
+		if err := checkoutCmd.Run(); err != nil {
+			return fmt.Errorf("failed to checkout commit %s: %w", commit, err)
+		}
+	}
+
+	d.logger.Info("Git clone completed successfully")
+	return nil
 }
