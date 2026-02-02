@@ -58,6 +58,7 @@ func (t *TruffleHogScanner) Scan(ctx context.Context, sourceDir string) ([]*pb.F
 		"filesystem",                  // Filesystem scan
 		"--json",                      // JSON output
 		"--no-verification",           // Don't verify secrets (faster)
+		"--no-update",                 // Disable auto-update (prevents exit code 1 in containers)
 		sourceDir,                     // Source directory
 	)
 
